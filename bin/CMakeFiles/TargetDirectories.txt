@@ -1,0 +1,3 @@
+/uufs/chpc.utah.edu/common/home/u0401321/TenX/bin/tools/CMakeFiles/10x.dir
+/uufs/chpc.utah.edu/common/home/u0401321/TenX/bin/lib/CMakeFiles/bamtools_project.dir
+/uufs/chpc.utah.edu/common/home/u0401321/TenX/bin/lib/CMakeFiles/zlib_project.dir
