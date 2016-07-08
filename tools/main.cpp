@@ -36,7 +36,8 @@ typedef vector< vector<int32_t > > cluster_t;
 typedef vector< pair<string, cluster_t> > clusterList_t;
 
 
-
+//writes out the hashmap of barcodes and corresponding positions to a csv file
+//first column is the unique barcode, all other colmns are positions corresponding to the barcodes
 void hashMaptoFile(hashmap_t &hashmap) {
   hashmap_t::iterator hashIt;
   vector<int32_t>::iterator vecIt;
@@ -55,6 +56,7 @@ void hashMaptoFile(hashmap_t &hashmap) {
 }
 
 
+//prints out the hashmap of barcodes and corresponding positions to cout
 void printHashMap(hashmap_t &hashmap) {
   hashmap_t::iterator hashIt;
   vector<int32_t>::iterator vecIt;
@@ -68,6 +70,7 @@ void printHashMap(hashmap_t &hashmap) {
   }
 }
 
+//calculates and prints out statistics of the meta-data of the barcode hash-map
 void barCodeStats(hashmap_t &hashmap) {
   int i;
   hashmap_t::iterator hashIt;
@@ -119,6 +122,8 @@ clusterList_t clusters(hashmap_t &hashmap) {
    return clusterList;
 }
 
+//prints out generated clusters
+//each barcode has a list of positions, where each cluster is seperated by '||'
 void printClusters(vector< pair<string, cluster_t> >  &clusterList) {
   vector<pair<string, cluster_t> >::iterator vecIt;
   cluster_t::iterator clustIt;
@@ -158,6 +163,7 @@ void clusterToFile(clusterList_t  &clusterList) {
    }
 }
 
+//generates and writes out statistics about the meta-data of the clusters
 void clusterAnal(clusterList_t  &clusterList) {
   clusterList_t::iterator vecIt;
   cluster_t::iterator clustIt;
@@ -204,6 +210,9 @@ void clusterAnal(clusterList_t  &clusterList) {
 }
 
 
+
+//main function where we loop through all allignments, and stores data of interest to a hashmap
+//we can then call other functions on our hashmap
 int main() {
     
   const std::string &filename = "/uufs/chpc.utah.edu/common/home/u0401321/TenX/bams/HG00512_WGS_phased_possorted_bam.bam"; 
@@ -256,17 +265,14 @@ int main() {
   }
  }
 
-    // printHashMap(hashMap);
-    // hashMaptoFile(hashMap);
-    // barCodeStats(hashMap);
-   
-    // printClusters(clusters);
+      // printHashMap(hashMap);
+      // hashMaptoFile(hashMap);
+      // barCodeStats(hashMap);
       clusterList_t clustList =  clusters(hashMap);
       // printClusters(clustList);
       // clusterToFile(clustList);
-       clusterAnal(clustList);
-  // close the reader & writer
-
+      clusterAnal(clustList);
+ 
   reader.Close();
   return 0;
     
