@@ -63,10 +63,9 @@ void printHashMap(hashmap_t &hashmap) {
     cout << "barcode is: "  << hashIt->first << "  frequency is: "  << hashIt->second.first  << "  barcode positions are "; 
       for (vecIt = hashIt->second.second.begin(); vecIt != hashIt->second.second.end(); vecIt++) {
 	cout << vecIt[i] << ", ";
-  }
+       }
     cout << "\n";
   }
-
 }
 
 void barCodeStats(hashmap_t &hashmap) {
@@ -75,9 +74,8 @@ void barCodeStats(hashmap_t &hashmap) {
   std::vector<int32_t> freqList;
   vector<int32_t>::iterator vecIt;
 
- 
- for (hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
-   freqList.push_back(hashIt->second.first); 
+  for (hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
+    freqList.push_back(hashIt->second.first); 
   }
 
  int averageFreq = accumulate(freqList.begin(), freqList.end(), 0.0 )/ freqList.size();
@@ -93,14 +91,17 @@ clusterList_t clusters(hashmap_t &hashmap) {
     hashmap_t::iterator hashIt;
     vector<int32_t>::iterator vecIt;
     int i;
-    vector< pair<string, cluster_t> > clusterList; 
+    vector< pair<string, cluster_t> > clusterList;
+ 
     for (hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
       pair<string, cluster_t> barCodeCluster;
       vector<int32_t> initCluster;
       int32_t initInt = hashIt->second.second[0];
+
       initCluster.push_back(initInt);
       barCodeCluster.first = hashIt->first;
       barCodeCluster.second.push_back(initCluster);
+
       for (vecIt = hashIt->second.second.begin(); vecIt != hashIt->second.second.end(); vecIt++) {
 
 	if ((vecIt[i] < (barCodeCluster.second.back().back() + 1000)) && (vecIt[i] > (barCodeCluster.second.back().back() - 1000))) {
@@ -178,13 +179,10 @@ void clusterAnal(clusterList_t  &clusterList) {
       for (readIt = clustIt->begin(); readIt!=clustIt->end(); readIt++) {
         clustSize++;
       }
-      //  cout << "cluster size: " << clustSize << endl; 
-      clusterCountList.push_back(clustSize);
+        clusterCountList.push_back(clustSize);
     }
-    // scout << "cluster list size: " << clusterCountList.size() << endl;
-    totalClusterCount.push_back(clusterCountList);
-    //    cout << "total Cluster size: " << totalClusterCount.size() << endl;
-  }
+     totalClusterCount.push_back(clusterCountList);
+   }
 
   double clustPerBC = 0;
   double readsPerCluster = 0;
@@ -195,7 +193,6 @@ void clusterAnal(clusterList_t  &clusterList) {
       //cout << "reads per cluster: " << *clusterCountIt << endl;
       readsPerCluster += *clusterCountIt;
     }
-
   }
 
   clusterStats << "total reads: " << readsPerCluster << endl;
@@ -203,8 +200,6 @@ void clusterAnal(clusterList_t  &clusterList) {
   clusterStats << "total clusters: " << clustPerBC << endl; 
   clustPerBC = clustPerBC / clusterList.size();
   clusterStats << "avg clusters per barcode: " << clustPerBC << endl;
-
-     
 
 }
 
@@ -240,7 +235,7 @@ int main() {
 
   // iterate though alignnets, only keeping one with a high-ish quality
   // Generates a multiset of all barcodes
-    while ( reader.GetNextAlignment(al)&& i < 10000000) {
+    while ( reader.GetNextAlignment(al)) {
      if ( al.MapQuality >= 10) {
         string  bx;
 	
