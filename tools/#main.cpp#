@@ -420,11 +420,9 @@ int main() {
   // distanceStats(clustList);
   // clusterToFile(clustList);
   //  clusterAnal(clustList);
-  hashmap_t filteredHashmap = filterBarcodes(hashMap);
-  barCodeReAllign(hashMap, filteredHashmap);
-  //string str1 = "abcd";
-  //string str2 = "abdd";
-  //simpleMatch(str1, str2);
+  // hashmap_t filteredHashmap = filterBarcodes(hashMap);
+  // barCodeReAllign(hashMap, filteredHashmap);
+ 
   reader.Close();
   return 0;
     
