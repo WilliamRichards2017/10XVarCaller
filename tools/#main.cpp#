@@ -131,7 +131,7 @@ clusterList_t clusters(hashmap_t &hashmap) {
   return clusterList;
 }
 
-
+//calculates the coverage of the clusters
 void coverage(clusterList_t  &clusterList) {                                                                                                                                                 
    ofstream coverage;                                                                                                                                                                              
    coverage.open("coverage.csv");                                                                                                                                                                  
@@ -151,31 +151,24 @@ void coverage(clusterList_t  &clusterList) {
 	   if ( second > maxRead) {
 	     maxRead = second;
 	   }
-
-
 	   if (first < minRead) {
 	     minRead = first;
 	   }
-
-
-	   //cout << "first is: " << first << "second is: " << second << endl;                                                                                                                                                                       
 	   count = count + (second - first);
-	  
-	   }
+	 }
 	 float size = maxRead - minRead;
 	 float cov = count / size;
 	 coverage << cov << endl;
 	 //cout << "size is " << size << endl;
 	 //cout << "count is " << count << endl; 
-	 }
+     }
      count = 0;
      minRead = inf;
      maxRead = 0;
-     
-       }
-     }
+   }
+ }
 
-
+//calculates the Simple Matching Coefficient of two strings (barcodes)
 double simpleMatch(string barcode1, string barcode2) {
   double smc = 0;
   for (string::size_type i = 0; i < barcode1.size(); i++){
@@ -202,6 +195,8 @@ hashmap_t filterBarcodes(hashmap_t &hashmap) {
    return filteredHashmap;
 }
 
+
+//If a barcode only has 1 read, remap that read to the 'true' barcode
 void barCodeReAllign(hashmap_t &hashmap, hashmap_t &filteredHashmap) {
   hashmap_t::iterator hashIt1;
   hashmap_t::iterator hashIt2;
@@ -228,7 +223,6 @@ void barCodeReAllign(hashmap_t &hashmap, hashmap_t &filteredHashmap) {
 }
 
 
-
 //generates and writes out statistics about the meta-data of the clusters
 void clusterAnal(clusterList_t  &clusterList) {
   clusterList_t::iterator vecIt;
@@ -252,7 +246,7 @@ void clusterAnal(clusterList_t  &clusterList) {
   for (vecIt = clusterList.begin(); vecIt!= clusterList.end(); vecIt++) {
     int clustCount = 0;
     vector<int> clusterCountList;
-       for (clustIt = vecIt->second.begin(); clustIt!= vecIt->second.end(); clustIt++) {
+    for (clustIt = vecIt->second.begin(); clustIt!= vecIt->second.end(); clustIt++) {
       clustCount++;
       int clustSize = 0;
       int maxRead = 0;
@@ -299,7 +293,7 @@ void clusterAnal(clusterList_t  &clusterList) {
   //  cout << "reads per cluster: " << *clusterCountIt << endl;
   //    readsPerCluster += *clusterCountIt;
   //    }
-  //    }
+  //  }
   
 
 
@@ -310,7 +304,6 @@ void clusterAnal(clusterList_t  &clusterList) {
   // clustPerBC = clustPerBC / clusterList.size();
   // clusterStats << "avg molecules per barcode: " << clustPerBC << endl;
   //  clusterStats << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-    
   //  clusterStats.close();
 
 }
