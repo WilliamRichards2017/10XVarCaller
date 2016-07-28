@@ -226,40 +226,7 @@ void barCodeReAllign(hashmap_t &hashmap, hashmap_t &filteredHashmap) {
    }
   }
 }
-      
 
-
-
-//prints out generated clusters
-//each barcode has a list of positions, where each cluster is seperated by '||'
-//void printClusters(vector< pair<string, cluster_t> >  &clusterList) {
-//  vector<pair<string, cluster_t> >::iterator vecIt;
-//  cluster_t::iterator clustIt;
-//  vector<int32_t>::iterator readIt;
-//}
-
-//Writes out the clusters assigned to each barcode
-//Each line contains a barcode, as well as a list of clusters
-//Each new cluster is marked with the '|' character
-
-//void clusterToFile(clusterList_t  &clusterList) {   
-//  ofstream clusters;
-//  clusters.open("clusters.csv");
-//  clusterList_t::iterator vecIt;
-//  cluster_t::iterator clustIt;                                                                                                         
-//  vector<int32_t>::iterator readIt;              
-
-//  for (vecIt = clusterList.begin(); vecIt!= clusterList.end(); vecIt++) {
-//  clusters << vecIt->first << ",";
-//    for (clustIt = vecIt->second.begin(); clustIt!= vecIt->second.end(); clustIt++) {
-//      clusters << "|";
-//      for (readIt = clustIt->begin(); readIt!=clustIt->end(); readIt++) {//
-//	clusters  << *readIt << ",";
-//      }
-//    }
-//    clusters << endl;
-//  }y
-//}
 
 
 //generates and writes out statistics about the meta-data of the clusters
@@ -306,17 +273,7 @@ void clusterAnal(clusterList_t  &clusterList) {
        	minRead = ((*readIt).first);
        	}
         
-       // readPair.first = (*readIt).first;
-       // readPair.second = (*readIt).second;
-
-       //   cout << "read " << readIt->first << "," << (*readIt).second<< "," << endl;
-	   
-     
-       //  cout << "minRead: " << minRead << "   maxRead:" << maxRead << endl;
-
-       //  intervalList.push_back(*readIt);
-       //cout << endl;
-	   }
+     }
 	
        readsHist2 << clustSize << endl;
        // cout << " # of reads in clust: " << clustSize << endl;
@@ -430,30 +387,18 @@ int main() {
     
       //cout << "do we get here" << endl;
   }
-  }
-  //  cout << "what about here??" << endl;
-
-  // pair<int, string> check1 = make_pair(1, "abcd");
-  //pair<int, string> check2 = make_pair(0, "abcd");
-  // map<pair<int,string>, int> testing;
-  // cout << endl << endl << (check1 < check2);
-
-
+ }
+ 
   // distance(hashMap);
-  // hashMaptoFile(hashMap);
-  // barCodeStats(hashMap);
+   // barCodeStats(hashMap);
    clusterList_t clustList =  clusters(hashMap);
    coverage(clustList);
    //printClusters(clustList);
-   //   distanceStats(clustList);
-  // clusterToFile(clustList);
-  //  clusterAnal(clustList);
+   // distanceStats(clustList);
+   // clusterAnal(clustList);
   // hashmap_t filteredHashmap = filterBarcodes(hashMap);
-  //barCodeReAllign(hashMap, filteredHashmap);
-  //string str1 = "abcd";
-  //string str2 = "abdd";
-  //simpleMatch(str1, str2);
-  reader.Close();
+  // barCodeReAllign(hashMap, filteredHashmap);
+   reader.Close();
   return 0;
     
 }
