@@ -32,7 +32,7 @@ using namespace std;
 using namespace BamTools;
 
 
-typedef std::map<std::string,std::pair<int32_t, vector<pair< int32_t, int32_t> > > > hashmap_t;
+typedef std::unordered_map<std::string,std::pair<int32_t, vector<pair< int32_t, int32_t> > > > hashmap_t;
 typedef vector< vector<pair<int32_t,int32_t > > > cluster_t;
 typedef vector< pair<string, cluster_t> > clusterList_t;
 
@@ -55,6 +55,25 @@ vector<pair<int, int> >intervalMerge(vector<pair<int, int> > &ranges) {
   result.push_back(current);
   return result;
 }
+
+
+void coverage(int &size, vector<pair<int, int> > &reads) {
+  vector<pair<int, int>>::iterator it;
+  cout << "size " << size << endl;
+   int count = 0;
+  for (it = reads.begin(); it != reads.end(); it++) {
+    int first = it->first;
+    int second = it->second;
+    //cout << "first is: " << first << "second is: " << second << endl;
+    count = count + (second - first);
+    }
+  //cout << "count : " << count << endl; 
+  float coverage = float(size)/ float(count);
+  cout << "coverage" << coverage << endl;
+    
+}
+
+
 
 //writes out the hashmap of barcodes and corresponding positions to a csv file
 //first column is the unique barcode, all other colmns are positions corresponding to the barcodes
@@ -116,33 +135,32 @@ clusterList_t clusters(hashmap_t &hashmap) {
   int i;
   vector< pair<string, cluster_t> > clusterList;
  
-    for (hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
+   for (hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
     pair<string, cluster_t> barCodeCluster;
     vector<pair<int32_t, int32_t> > initCluster;
-    //    initCluster.push_back(make_pair(hashIt->second.second[0].first, hashIt->second.second[0].second));
-    initCluster.push_back(make_pair(hashIt->second.second[0].first,hashIt->second.second[0].second));
+     initCluster.push_back(make_pair(hashIt->second.second[0].first,hashIt->second.second[0].second));
     barCodeCluster.first = hashIt->first;
     barCodeCluster.second.push_back(initCluster);
    
     //        cout << hashIt->second.second[0].first << endl;
 
     int distThresh = 100000;
-    for (vecIt = hashIt->second.second.begin(); vecIt != hashIt->second.second.end(); vecIt++) {
-      if ((*vecIt).first < (barCodeCluster.second.back().back().first + distThresh)) {
-        	barCodeCluster.second.back().push_back(*vecIt);
-           	barCodeCluster.first = hashIt->first;
-
-	  } else {
-    	vector<pair< int32_t, int32_t> > cluster;
-    	cluster.push_back(*vecIt);
+     for (vecIt = hashIt->second.second.begin(); vecIt != hashIt->second.second.end(); vecIt++) {
+          if ((*vecIt).first < (barCodeCluster.second.back().back().first + distThresh)) {
+         barCodeCluster.second.back().push_back(*vecIt);
+      	barCodeCluster.first = hashIt->first;
+ 
+          } else {
+      	vector<pair< int32_t, int32_t> > cluster;
+      	cluster.push_back(*vecIt);
 	//cout << vecIt->first << endl;
-    	barCodeCluster.second.push_back(cluster);
-	    }
-     sort(barCodeCluster.second.begin(), barCodeCluster.second.end());
+      	barCodeCluster.second.push_back(cluster);
+        }
+       sort(barCodeCluster.second.begin(), barCodeCluster.second.end());
 
-     }
+       }
     
-     clusterList.push_back(barCodeCluster);       
+       clusterList.push_back(barCodeCluster);       
      }
   return clusterList;
 }
@@ -150,14 +168,23 @@ clusterList_t clusters(hashmap_t &hashmap) {
 void distanceStats(clusterList_t  &clusterList) {                                                                                                                                                 
    ofstream distance;                                                                                                                                                                              
    distance.open("distance.csv");                                                                                                                                                                  
-   clusterList_t::iterator vecIt;                                                                                                                                 cluster_t::iterator clustIt;                                                                                                                                   vector<pair<int32_t, int32_t> >::iterator readIt;   
+   clusterList_t::iterator vecIt;
+   cluster_t::iterator clustIt;                                                                               
+   vector<pair<int32_t, int32_t> >::iterator readIt;   
 
    for (vecIt = clusterList.begin(); vecIt != clusterList.end(); vecIt++) {
        for (clustIt = vecIt->second.begin(); clustIt!= vecIt->second.end(); clustIt++) {
-	 for (readIt = clustIt->begin(); readIt!=clustIt->end()-1; readIt++) {                                                                                               distance  << (readIt+1)->first - readIt->first  << endl; 
+	 for (readIt = clustIt->begin(); readIt!=clustIt->end()-1; readIt++) {
+	   int dist = (readIt+1)->first - readIt->first;
+	   if (dist != 0) {
+	   distance  << dist << endl; 
+	   //  cout << dist  << endl;
+	   }
 	 }
        }
      }
+
+     distance.close();
 }
 
 double simpleMatch(string barcode1, string barcode2) {
@@ -244,6 +271,7 @@ void barCodeReAllign(hashmap_t &hashmap, hashmap_t &filteredHashmap) {
 //  }y
 //}
 
+
 //generates and writes out statistics about the meta-data of the clusters
 void clusterAnal(clusterList_t  &clusterList) {
   clusterList_t::iterator vecIt;
@@ -256,17 +284,17 @@ void clusterAnal(clusterList_t  &clusterList) {
   vector<pair< int, int> > intervalList;
   vector<pair<int, int> > moleculeList;
   vector<vector<pair<int, int> > >totalMList;
+  int size;
   ofstream clusterStats;
   ofstream moleculeHist2;
   clusterStats.open("clusterStats.csv");
   moleculeHist2.open("moleculeHistogram2.csv");
   ofstream readsHist2;
   readsHist2.open("readsHistogram2.csv");
-  
+
   for (vecIt = clusterList.begin(); vecIt!= clusterList.end(); vecIt++) {
     int clustCount = 0;
     vector<int> clusterCountList;
-   
        for (clustIt = vecIt->second.begin(); clustIt!= vecIt->second.end(); clustIt++) {
       clustCount++;
       int clustSize = 0;
@@ -277,7 +305,7 @@ void clusterAnal(clusterList_t  &clusterList) {
 
            for (readIt = clustIt->begin(); readIt!=clustIt->end(); readIt++) {
          clustSize = clustSize + 1;
-	   
+
 	 //	   cout << clustSize << endl;
              if ((*readIt).second > maxRead) {
         maxRead = (*readIt).second;
@@ -296,26 +324,31 @@ void clusterAnal(clusterList_t  &clusterList) {
      
        //  cout << "minRead: " << minRead << "   maxRead:" << maxRead << endl;
 
-       intervalList.push_back(*readIt);
+        intervalList.push_back(*readIt);
        //cout << endl;
 	   }
+	
        readsHist2 << clustSize << endl;
        // cout << " # of reads in clust: " << clustSize << endl;
        //out << "start of molecule: " << minRead << endl << "end of molecule: " << maxRead << endl;
        // cout << "molecule size: " << maxRead - minRead << endl;
-       moleculeHist2  << maxRead - minRead << endl;
+       size = maxRead - minRead;
+       moleculeHist2  << size << endl;
        clusterCountList.push_back(clustSize);
        moleculePair.first = minRead;
        moleculePair.second = maxRead;
-       moleculeList.push_back(moleculePair);
-  
+       moleculeList.push_back(moleculePair);    
+       
+      
        }
-    
-       // totalIntList.push_back(intervalMerge(intervalList));
+           // totalIntList.push_back(intervalMerge(intervalList));
          totalClusterCount.push_back(clusterCountList);
+	 // coverage(size, intervalList);
   }
-  readsHist2.close();
+ 
+   readsHist2.close();
   moleculeHist2.close();
+  
 
  
   // unordered_map<int, int>::iterator readsIt;
@@ -326,15 +359,15 @@ void clusterAnal(clusterList_t  &clusterList) {
   //  }
 
     double clustPerBC = 0;
-   double readsPerCluster = 0;
-  for (totalCCIt = totalClusterCount.begin(); totalCCIt!= totalClusterCount.end(); totalCCIt++) {
-    // cout << "Clusters per barcode: " << totalCCIt->size() << endl;
-    clustPerBC += totalCCIt->size();
-    for (clusterCountIt = totalCCIt->begin(); clusterCountIt!= totalCCIt->end(); clusterCountIt++) {
-      //  cout << "reads per cluster: " << *clusterCountIt << endl;
-      readsPerCluster += *clusterCountIt;
-    }
-    }
+    double readsPerCluster = 0;
+      for (totalCCIt = totalClusterCount.begin(); totalCCIt!= totalClusterCount.end(); totalCCIt++) {
+	//cout << "Clusters per barcode: " << totalCCIt->size() << endl;
+       clustPerBC += totalCCIt->size();
+     for (clusterCountIt = totalCCIt->begin(); clusterCountIt!= totalCCIt->end(); clusterCountIt++) {
+       //  cout << "reads per cluster: " << *clusterCountIt << endl;
+       readsPerCluster += *clusterCountIt;
+      }
+      }
   
 
 
@@ -384,9 +417,10 @@ int main() {
 
   // iterate though alignnets, only keeping one with a high-ish quality
   // Generates a multiset of all barcodes
-  while ( reader.GetNextAlignment(al) && i < 10000000) {
+  while ( reader.GetNextAlignment(al)) {
     if ( al.MapQuality >= 10) {
       string  bx;
+      // cout << i << endl;
       
       if (al.GetTag("BX", bx)) {
 	//if key already exists, add to freq count and position list
@@ -403,8 +437,11 @@ int main() {
 	}
       }
       i++;
-    }
+    
+      //cout << "do we get here" << endl;
   }
+  }
+  //  cout << "what about here??" << endl;
 
   // pair<int, string> check1 = make_pair(1, "abcd");
   //pair<int, string> check2 = make_pair(0, "abcd");
@@ -415,14 +452,16 @@ int main() {
   // printHashMap(hashMap);
   // hashMaptoFile(hashMap);
   // barCodeStats(hashMap);
-  // clusterList_t clustList =  clusters(hashMap);
-  //printClusters(clustList);
-  // distanceStats(clustList);
+   clusterList_t clustList =  clusters(hashMap);
+   //printClusters(clustList);
+   //  distanceStats(clustList);
   // clusterToFile(clustList);
-  //  clusterAnal(clustList);
+    clusterAnal(clustList);
   // hashmap_t filteredHashmap = filterBarcodes(hashMap);
-  // barCodeReAllign(hashMap, filteredHashmap);
- 
+  //barCodeReAllign(hashMap, filteredHashmap);
+  //string str1 = "abcd";
+  //string str2 = "abdd";
+  //simpleMatch(str1, str2);
   reader.Close();
   return 0;
     
