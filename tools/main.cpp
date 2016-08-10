@@ -384,7 +384,6 @@ string getFastaPos(BamAlignment &al) {
   string end = to_string(al.GetEndPosition());
   string pos = start + "-" + end;
   // cout << pos << endl;
-  // cout << al.QueryBases << endl;
   return pos;
 }
 
@@ -403,6 +402,17 @@ string getCig(std::vector<CigarOp> & cigString) {
 
 vector<int>  variantDetector(vector<pair<char, string> > &tokenizedCig, string &refSeq, string &readSeq) {
   vector<int> variants;
+  string::iterator refIt;
+  string::iterator readIt;
+  for(refIt=refSeq.begin() && readIt = readSeq.begin(); refIt != refSeq.end() && readIt != readSeq.end(); refIt++, readIt++) { 
+    if( *refIt == *readIt) {
+      cout << "its a match!" << endl;
+  } 
+    else {
+      cout << "its NOT a match!" << endl;
+      
+    }
+
   return variants;
 }
 
