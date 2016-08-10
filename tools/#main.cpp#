@@ -7,6 +7,7 @@
 //
 
 #include <stdlib.h>
+#include <stdexcept>
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
@@ -35,6 +36,29 @@ using namespace BamTools;
 typedef std::unordered_map<std::string,std::pair<int32_t, vector<pair< int32_t, int32_t> > > > hashmap_t;
 typedef vector< vector<pair<int32_t,int32_t > > > cluster_t;
 typedef vector< pair<string, cluster_t> > clusterList_t;
+
+
+
+
+//executes a command in the shell, and writes command output as funciton output
+string exec(char const* cmd) {
+  char buffer[128];
+  string result = "";
+  FILE* pipe = popen(cmd, "r");
+  if (!pipe) throw runtime_error("popen() failed!");
+  try {
+    while (!feof(pipe)) {
+      if (fgets(buffer, 128, pipe) != NULL)
+	result += buffer;
+    }
+  } catch (...) {
+    pclose(pipe);
+    throw;
+  }
+  pclose(pipe);
+  return result;
+}
+
 
 
 //Merges a set of intervals that overlap
@@ -74,6 +98,46 @@ void distance(hashmap_t &hashmap) {
   }
  }
 }
+
+
+void printTokenizedCig(vector<pair<char, string> > &cigVec) {
+  vector<pair<char,string> >::iterator cigIt;
+
+  for (cigIt = cigVec.begin(); cigIt != cigVec.end(); cigIt++) {
+    cout << "character: " << cigIt->first << "  number: " << cigIt->second << endl;
+  }
+}
+
+
+
+vector<pair<char, string> > tokenizeCig(string &cigarString) {
+ vector<pair<char, string> > cigVec;
+ string::iterator cigIt;
+ pair<char, string> cigPair;
+
+  for (cigIt = cigarString.begin(); cigIt != cigarString.end(); cigIt++) {
+       if (isalpha(*cigIt)) {
+	 if (isalpha(cigPair.first)) {
+      cigVec.push_back(cigPair);
+	 }
+      cigPair.first = *cigIt;
+      //cout << "debug: " << cigPair.first << endl;
+       cigPair.second = "";
+    }
+
+    if(isdigit(*cigIt)) {
+      cigPair.second.push_back(*cigIt);
+      // cout << "bebug2: " << cigPair.first << ", " << cigPair.second << endl;
+    }
+  }
+  cigVec.push_back(cigPair);
+  return cigVec; 
+ 
+}
+
+
+
+
 
 //calculates and prints out statistics of the meta-data of the barcode hash-map
 //void barCodeStats(hashmap_t &hashmap) {
@@ -131,7 +195,7 @@ clusterList_t clusters(hashmap_t &hashmap) {
   return clusterList;
 }
 
-//calculates the coverage of the clusters
+
 void coverage(clusterList_t  &clusterList) {                                                                                                                                                 
    ofstream coverage;                                                                                                                                                                              
    coverage.open("coverage.csv");                                                                                                                                                                  
@@ -151,24 +215,31 @@ void coverage(clusterList_t  &clusterList) {
 	   if ( second > maxRead) {
 	     maxRead = second;
 	   }
+
+
 	   if (first < minRead) {
 	     minRead = first;
 	   }
+
+
+	   //cout << "first is: " << first << "second is: " << second << endl;                                                                                                                                                                       
 	   count = count + (second - first);
-	 }
+	  
+	   }
 	 float size = maxRead - minRead;
 	 float cov = count / size;
 	 coverage << cov << endl;
 	 //cout << "size is " << size << endl;
 	 //cout << "count is " << count << endl; 
-     }
+	 }
      count = 0;
      minRead = inf;
      maxRead = 0;
-   }
- }
+     
+       }
+     }
 
-//calculates the Simple Matching Coefficient of two strings (barcodes)
+
 double simpleMatch(string barcode1, string barcode2) {
   double smc = 0;
   for (string::size_type i = 0; i < barcode1.size(); i++){
@@ -195,8 +266,6 @@ hashmap_t filterBarcodes(hashmap_t &hashmap) {
    return filteredHashmap;
 }
 
-
-//If a barcode only has 1 read, remap that read to the 'true' barcode
 void barCodeReAllign(hashmap_t &hashmap, hashmap_t &filteredHashmap) {
   hashmap_t::iterator hashIt1;
   hashmap_t::iterator hashIt2;
@@ -223,6 +292,7 @@ void barCodeReAllign(hashmap_t &hashmap, hashmap_t &filteredHashmap) {
 }
 
 
+
 //generates and writes out statistics about the meta-data of the clusters
 void clusterAnal(clusterList_t  &clusterList) {
   clusterList_t::iterator vecIt;
@@ -246,7 +316,7 @@ void clusterAnal(clusterList_t  &clusterList) {
   for (vecIt = clusterList.begin(); vecIt!= clusterList.end(); vecIt++) {
     int clustCount = 0;
     vector<int> clusterCountList;
-    for (clustIt = vecIt->second.begin(); clustIt!= vecIt->second.end(); clustIt++) {
+       for (clustIt = vecIt->second.begin(); clustIt!= vecIt->second.end(); clustIt++) {
       clustCount++;
       int clustSize = 0;
       int maxRead = 0;
@@ -293,7 +363,7 @@ void clusterAnal(clusterList_t  &clusterList) {
   //  cout << "reads per cluster: " << *clusterCountIt << endl;
   //    readsPerCluster += *clusterCountIt;
   //    }
-  //  }
+  //    }
   
 
 
@@ -304,8 +374,39 @@ void clusterAnal(clusterList_t  &clusterList) {
   // clustPerBC = clustPerBC / clusterList.size();
   // clusterStats << "avg molecules per barcode: " << clustPerBC << endl;
   //  clusterStats << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+    
   //  clusterStats.close();
 
+}
+
+string getFastaPos(BamAlignment &al) {
+  string  start = to_string(al.Position+1);
+  string end = to_string(al.GetEndPosition());
+  string pos = start + "-" + end;
+  // cout << pos << endl;
+  // cout << al.QueryBases << endl;
+  return pos;
+}
+
+string getCig(std::vector<CigarOp> & cigString) {
+  std::vector< CigarOp >::iterator cigIt;
+  string cigar;
+    for (cigIt = cigString.begin(); cigIt != cigString.end(); cigIt++) {
+     cigar += (*cigIt).Type + to_string((*cigIt).Length);
+     
+    }
+    cout << cigar << endl;
+    return cigar;
+}
+  
+	
+
+vector<int>  variantDetector(vector<pair<char, string> > &tokenizedCig, string &refSeq, string &readSeq) {
+  vector<int> variants;
+  dsad
+
+
+  return variants;
 }
 
 
@@ -314,8 +415,9 @@ void clusterAnal(clusterList_t  &clusterList) {
 //wes can then call other functions on our hashmap
 int main() {
     
-  const std::string &filename = "/uufs/chpc.utah.edu/common/home/u0401321/TenX/bams/HG00512_WGS_phased_possorted_bam.bam"; 
-    
+  const std::string &filename = "/uufs/chpc.utah.edu/common/home/u0401321/TenX/bams/HG00513_WGS_phased_possorted_bam.bam"; 
+  string fasta1 = " /uufs/chpc.utah.edu/common/home/marth-d1/data/software/chpc/kingspeak.peaks/gkno_launcher/tools/vcflib/fastahack/fastahack -r chr1:";
+  string fasta2 = " /uufs/chpc.utah.edu/common/home/marth-d1/data/software/chpc/kingspeak.peaks/gkno_launcher/resources/homo_sapiens_grch38/current/GRCh38_full_analysis_set_plus_decoy_hla.fa";
   string outputFilename;
     
   BamTools::BamReader reader;
@@ -331,7 +433,7 @@ int main() {
   map<int32_t, string> chromIDNameMap;
   for(size_t i=0; i<refVector.size(); i++) {
     chromIDNameMap[reader.GetReferenceID(refVector[i].RefName)] = refVector[i].RefName;
-    cout << refVector[i].RefName  << "\n";
+    // cout << refVector[i].RefName  << "\n";
   }
     
   const SamHeader header = reader.GetHeader();
@@ -340,14 +442,28 @@ int main() {
   BamAlignment al;
   int i = 0;
   hashmap_t hashMap;  
-
+  string cigarString;
+  std::vector< CigarOp >::iterator cigIt;
+ 
   // iterate though alignnets, only keeping one with a high-ish quality
   // Generates a multiset of all barcodes
-  while ( reader.GetNextAlignment(al) && i < 10000000) {
+  while ( reader.GetNextAlignment(al) && i < 1000) {
     if ( al.MapQuality >= 10) {
       string  bx;
-      // cout << i << endl;
-      
+      getFastaPos(al);
+      //cout << al.AlignedBases << endl;
+      cigarString = getCig(al.CigarData);
+      vector<pair<char, string> > tokenizedCig = tokenizeCig(cigarString);
+      printTokenizedCig(tokenizedCig);
+      string pos = getFastaPos(al);
+      string cmd1 = fasta1 + pos + fasta2;
+      const char* cmd2 = cmd1.c_str();
+      string execute =  exec(cmd2);
+      cout << execute;
+      cout << al.AlignedBases << endl;
+      cout << al.QueryBases << endl << endl;  
+      variantDetector(tokenizedCig, execute, al.AlignedBases); 
+            
       if (al.GetTag("BX", bx)) {
 	//if key already exists, add to freq count and position list
 	
@@ -366,15 +482,21 @@ int main() {
   }
  }
  
- // distance(hashMap);
+  distance(hashMap);
  // barCodeStats(hashMap);
-  clusterList_t clustList =  clusters(hashMap);
-  coverage(clustList);
+  //  clusterList_t clustList =  clusters(hashMap);
+  //  coverage(clustList);
  //printClusters(clustList);
  // distanceStats(clustList);
  // clusterAnal(clustList);
  // hashmap_t filteredHashmap = filterBarcodes(hashMap);
  // barCodeReAllign(hashMap, filteredHashmap);
   reader.Close();
+  string f = "M3D1M32S116";
+  vector<pair<char, string> > cig = tokenizeCig(f);
+  //printTokenizedCig(cig);
+ 
+  
   return 0;   
+
 }
