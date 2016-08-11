@@ -1,2 +1,0 @@
-         cout << "cluster size is: " << clusterList.size() << endl;
-
