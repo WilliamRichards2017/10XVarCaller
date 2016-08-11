@@ -391,10 +391,14 @@ string getCig(std::vector<CigarOp> & cigString) {
   std::vector< CigarOp >::iterator cigIt;
   string cigar;
     for (cigIt = cigString.begin(); cigIt != cigString.end(); cigIt++) {
+      if ((*cigIt).Type == 'P' || (*cigIt).Type == 'H' || (*cigIt).Type == 'N') {
+	
+	cout << "found a type~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ " << (*cigIt).Type << endl;
+      }
      cigar += (*cigIt).Type + to_string((*cigIt).Length);
      
     }
-    cout << cigar << endl;
+    //cout << cigar << endl;
     return cigar;
 }
   
@@ -402,17 +406,21 @@ string getCig(std::vector<CigarOp> & cigString) {
 
 vector<int>  variantDetector(vector<pair<char, string> > &tokenizedCig, string &refSeq, string &readSeq) {
   vector<int> variants;
-  string::iterator refIt;
-  string::iterator readIt;
-  for(refIt=refSeq.begin() && readIt = readSeq.begin(); refIt != refSeq.end() && readIt != readSeq.end(); refIt++, readIt++) { 
+  vector<pair<char, string> >::iterator tokenIt;
+  string::iterator refIt = refSeq.begin();
+  string::iterator readIt = readSeq.begin();
+  for(; refIt != refSeq.end() && readIt != readSeq.end(); refIt++, readIt++) { 
     if( *refIt == *readIt) {
-      cout << "its a match!" << endl;
+      // cout << "its a match!" << endl;
+      //cout << "ref it: " << *refIt << " readIt: " << *readIt << endl;
   } 
     else {
-      cout << "its NOT a match!" << endl;
+      //cout << "its NOT a match!" << endl;
+      //cout << "ref it: " << *refIt << " readIt: " << *readIt << endl;
+
       
     }
-
+  }
   return variants;
 }
 
@@ -454,7 +462,7 @@ int main() {
  
   // iterate though alignnets, only keeping one with a high-ish quality
   // Generates a multiset of all barcodes
-  while ( reader.GetNextAlignment(al) && i < 1000) {
+  while ( reader.GetNextAlignment(al) && i < 100000) {
     if ( al.MapQuality >= 10) {
       string  bx;
       getFastaPos(al);
@@ -467,9 +475,9 @@ int main() {
       const char* cmd2 = cmd1.c_str();
       string execute =  exec(cmd2);
       cout << execute;
-      cout << al.AlignedBases << endl;
+      //cout << al.AlignedBases << endl;
       cout << al.QueryBases << endl << endl;  
-      variantDetector(tokenizedCig, execute, al.AlignedBases); 
+      //variantDetector(tokenizedCig, execute, al.QueryBases); 
             
       if (al.GetTag("BX", bx)) {
 	//if key already exists, add to freq count and position list
