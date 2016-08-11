@@ -20,6 +20,7 @@
 #include <numeric>
 #include <algorithm>
 #include <limits.h>
+#include <tuple>
 
 
 #include <shared/bamtools_global.h>
