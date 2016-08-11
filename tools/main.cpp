@@ -20,6 +20,7 @@
 #include <numeric>
 #include <algorithm>
 #include <limits.h>
+#include <tuple>
 
 
 #include <shared/bamtools_global.h>
@@ -408,14 +409,7 @@ vector<int>  variantDetector(vector<pair<char, string> > &tokenizedCig, string &
   vector<pair<char, string> >::iterator tokenIt;
   string::iterator refIt = refSeq.begin();
   string::iterator readIt = readSeq.begin();
-  // for(; refIt != refSeq.end() && readIt != readSeq.end(); refIt++, readIt++) { 
-  //  if( *refIt == *readIt) {
-      // cout << "its a match!" << endl;
-      //cout << "ref it: " << *refIt << " readIt: " << *readIt << endl;
-  //  } 
-  // else {
-      //cout << "its NOT a match!" << endl;
-      //cout << "ref it: " << *refIt << " readIt: " << *readIt << endl;
+  int pos = 0;
  
   for(tokenIt = tokenizedCig.begin(); tokenIt != tokenizedCig.end(); tokenIt++) {
    
@@ -425,16 +419,136 @@ vector<int>  variantDetector(vector<pair<char, string> > &tokenizedCig, string &
 
   if (tokenIt->first == 'D') {
     advance(refIt, stoi(tokenIt->second));
+    pos += stoi(tokenIt->second);
   }
 
     if (tokenIt->first == 'M') {   
       for(int i = 0; i < stoi(tokenIt->second); i++) {
+	pos += 1;
 	if(*refIt == *readIt || *refIt == 'N') {
 	  cout << "Reference: " << *refIt << " Read: " << *readIt << endl;
 	}
-	else {                                                                                                                                                                                                                                                                  	 cout << "~~~~~~~~~~~~~~~~~~~~~VARIANT DETECTED~~~~~~~~~~~~~~~~~~~~" << endl;                                
-	  cout << "Reference: " << *refIt << " Read: " << *readIt << endl;    
-	  cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+	else {
+	  switch(*refIt) {
+	  case 'R':
+	    if (*readIt == 'A' || *readIt == 'G') {
+	      cout << "Reference: " << *refIt << " Read: " << *readIt << endl;
+	    }
+	    else {
+	      cout << "~~~~~~~~~~~~~~~~~~~Variant Detected~~~~~~~~~~~~~~~~~~~~~~" << endl;
+	      cout << "Reference: " << *refIt << " Read: " << *readIt << " at pos: " << pos << endl;
+	      cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+	    }
+	     break;
+	 
+	  case 'Y':
+            if (*readIt== 'C' || *readIt == 'T') {
+              cout << "Reference: " << *refIt << " Read: " << *readIt << endl;
+            }
+            else {
+              cout << "~~~~~~~~~~~~~~~~~~~Variant Detected~~~~~~~~~~~~~~~~~~~~~~" << endl;
+              cout << "Reference: " << *refIt << " Read: " << *readIt << " at pos: " << pos << endl;
+              cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            }
+	    break;
+
+	  case 'K':
+	    if (*readIt== 'G' || *readIt == 'T') {
+              cout << "Reference: " << *refIt << " Read: " << *readIt << endl;
+            }
+            else {
+              cout << "~~~~~~~~~~~~~~~~~~~Variant Detected~~~~~~~~~~~~~~~~~~~~~~" << endl;
+              cout << "Reference: " << *refIt << " Read: " << *readIt << " at pos: " << pos << endl;
+              cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            }
+	    break;
+
+	  case 'M':
+	    if (*readIt== 'A' || *readIt == 'C') {
+              cout << "Reference: " << *refIt << " Read: " << *readIt << endl;
+            }
+            else {
+              cout << "~~~~~~~~~~~~~~~~~~~Variant Detected~~~~~~~~~~~~~~~~~~~~~~" << endl;
+              cout << "Reference: " << *refIt << " Read: " << *readIt << " at pos: " << pos << endl;
+              cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            }
+	    break;
+
+	  case 'S':
+	    if (*readIt== 'C' || *readIt == 'G') {
+              cout << "Reference: " << *refIt << " Read: " << *readIt << endl;
+            }
+            else {
+              cout << "~~~~~~~~~~~~~~~~~~~Variant Detected~~~~~~~~~~~~~~~~~~~~~~" << endl;
+              cout << "Reference: " << *refIt << " Read: " << *readIt << " at pos: " << pos << endl;
+              cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            }
+	    break;
+
+	  case 'W':
+	    if (*readIt== 'A' || *readIt == 'T') {
+              cout << "Reference: " << *refIt << " Read: " << *readIt << endl;
+            }
+            else {
+              cout << "~~~~~~~~~~~~~~~~~~~Variant Detected~~~~~~~~~~~~~~~~~~~~~~" << endl;
+              cout << "Reference: " << *refIt << " Read: " << *readIt << " at pos: " << pos << endl;
+              cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            }
+	    break;
+ 
+	  case 'B':
+	    if (*readIt != 'A') {
+              cout << "Reference: " << *refIt << " Read: " << *readIt << endl;
+            }
+            else {
+              cout << "~~~~~~~~~~~~~~~~~~~Variant Detected~~~~~~~~~~~~~~~~~~~~~~" << endl;
+              cout << "Reference: " << *refIt << " Read: " << *readIt << " at pos: " << pos << endl;
+              cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            }
+	    break;
+	    
+	  case 'D':
+	    if (*readIt != 'C') {
+              cout << "Reference: " << *refIt << " Read: " << *readIt << endl;
+            }
+            else {
+              cout << "~~~~~~~~~~~~~~~~~~~Variant Detected~~~~~~~~~~~~~~~~~~~~~~" << endl;
+              cout << "Reference: " << *refIt << " Read: " << *readIt << " at pos: " << pos << endl;
+              cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            }
+	    break;
+	    
+	  case 'H':
+	    if (*readIt != 'G') {
+              cout << "Reference: " << *refIt << " Read: " << *readIt << endl;
+            }
+            else {
+              cout << "~~~~~~~~~~~~~~~~~~~Variant Detected~~~~~~~~~~~~~~~~~~~~~~" << endl;
+              cout << "Reference: " << *refIt << " Read: " << *readIt << " at pos: " << pos << endl;
+              cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            }
+	    break;
+	    
+	  case 'V':
+	    if (*readIt != 'T') {
+              cout << "Reference: " << *refIt << " Read: " << *readIt << endl;
+            }
+            else {
+              cout << "~~~~~~~~~~~~~~~~~~~Variant Detected~~~~~~~~~~~~~~~~~~~~~~" << endl;
+              cout << "Reference: " << *refIt << " Read: " << *readIt << " at pos: " << pos << endl;
+              cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            }
+	    break;
+
+	  case 'A':
+	  case 'C':
+	  case 'G':
+	  case 'T':
+	    cout << "~~~~~~~~~~~~~~~~~~~Variant Detected~~~~~~~~~~~~~~~~~~~~~~" << endl;
+	    cout << "Reference: " << *refIt << " Read: " << *readIt << " at pos: " << pos << endl;
+	    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+	    break;
+	  }	  
 	}
 	refIt++;
 	readIt++;
