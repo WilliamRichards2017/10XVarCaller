@@ -1,8 +1,0 @@
-// new cluster c file
-//    /uufs/chpc.utah.edu/common/home/u0401321/TenX/bin/tools
-
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <vector>
