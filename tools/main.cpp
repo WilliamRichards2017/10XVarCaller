@@ -34,12 +34,12 @@ using namespace std;
 using namespace BamTools;
 
 
-typedef std::unordered_map<std::string,std::pair<int32_t, vector<pair< int32_t, int32_t> > > > hashmap_t;
+//typedef std::unordered_map<std::string,std::pair<int32_t, vector<pair< int32_t, int32_t> > > > hashmap_t;
 typedef vector< vector<pair<int32_t,int32_t > > > cluster_t;
 typedef vector< pair<string, cluster_t> > clusterList_t;
-
-
-
+typedef vector< pair <BamAlignment, vector< tuple <int,char,char> > > > molecule_t;
+typedef vector< tuple < int, char, char> > variants_t;
+typedef unordered_map<string, vector<molecule_t> > hashmap_t;
 
 //executes a command in the shell, and writes command output as funciton output
 string exec(char const* cmd) {
@@ -84,21 +84,21 @@ vector<pair<int, int> >intervalMerge(vector<pair<int, int> > &ranges) {
 
 
 //prints out the hashmap of barcodes and corresponding positions to cout
-void distance(hashmap_t &hashmap) {
-  hashmap_t::iterator hashIt;
-  vector<pair<int32_t, int32_t> >::iterator vecIt;
-  ofstream distance;
-  distance.open("distance.csv");
-  int i;
-  for (hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
-     for (vecIt = hashIt->second.second.begin(); vecIt != hashIt->second.second.end(); vecIt++) {
-     int dist = (vecIt+1)->first - vecIt->first;
-     if (dist != 0) {
-       distance  << dist << endl;
-   }
-  }
- }
-}
+//void distance(hashmap_t &hashmap) {
+//  hashmap_t::iterator hashIt;
+//  vector<pair<int32_t, int32_t> >::iterator vecIt;
+//  ofstream distance;
+//  distance.open("distance.csv");
+//  int i;
+//  for (hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
+//     for (vecIt = hashIt->second.second.begin(); vecIt != hashIt->second.second.end(); vecIt++) {
+//     int dist = (vecIt+1)->first - vecIt->first;
+//     if (dist != 0) {
+//       distance  << dist << endl;
+//  }
+//  }
+// }
+//}
 
 
 void printTokenizedCig(vector<pair<char, string> > &cigVec) {
@@ -160,41 +160,41 @@ vector<pair<char, string> > tokenizeCig(string &cigarString) {
 
 
 //Clusters the alignments corresponding to a barcode based on position
-clusterList_t clusters(hashmap_t &hashmap) {
-  hashmap_t::iterator hashIt;
-  vector<pair<int32_t, int32_t> >::iterator vecIt;
-  int i;
-  vector< pair<string, cluster_t> > clusterList;
+//clusterList_t clusters(hashmap_t &hashmap) {
+//  hashmap_t::iterator hashIt;
+//  vector<pair<int32_t, int32_t> >::iterator vecIt;
+//  int i;
+//  vector< pair<string, cluster_t> > clusterList;
  
-   for (hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
-    pair<string, cluster_t> barCodeCluster;
-    vector<pair<int32_t, int32_t> > initCluster;
-     initCluster.push_back(make_pair(hashIt->second.second[0].first,hashIt->second.second[0].second));
-    barCodeCluster.first = hashIt->first;
-    barCodeCluster.second.push_back(initCluster);
+//   for (hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
+//    pair<string, cluster_t> barCodeCluster;
+//    vector<pair<int32_t, int32_t> > initCluster;
+//     initCluster.push_back(make_pair(hashIt->second.second[0].first,hashIt->second.second[0].second));
+//    barCodeCluster.first = hashIt->first;
+//    barCodeCluster.second.push_back(initCluster);
    
     //        cout << hashIt->second.second[0].first << endl;
 
-    int distThresh = 100000;
-     for (vecIt = hashIt->second.second.begin(); vecIt != hashIt->second.second.end(); vecIt++) {
-          if ((*vecIt).first < (barCodeCluster.second.back().back().first + distThresh)) {
-         barCodeCluster.second.back().push_back(*vecIt);
-      	barCodeCluster.first = hashIt->first;
+//    int distThresh = 100000;
+//     for (vecIt = hashIt->second.second.begin(); vecIt != hashIt->second.second.end(); vecIt++) {
+//         if ((*vecIt).first < (barCodeCluster.second.back().back().first + distThresh)) {
+//         barCodeCluster.second.back().push_back(*vecIt);
+//      	barCodeCluster.first = hashIt->first;
  
-          } else {
-      	vector<pair< int32_t, int32_t> > cluster;
-      	cluster.push_back(*vecIt);
-	//cout << vecIt->first << endl;
-      	barCodeCluster.second.push_back(cluster);
-        }
-       sort(barCodeCluster.second.begin(), barCodeCluster.second.end());
+//          } else {
+//      	vector<pair< int32_t, int32_t> > cluster;
+//      	cluster.push_back(*vecIt);
+//	//cout << vecIt->first << endl;
+//      	barCodeCluster.second.push_back(cluster);
+//        }
+//       sort(barCodeCluster.second.begin(), barCodeCluster.second.end());
 
-       }
+//       }
     
-       clusterList.push_back(barCodeCluster);       
-     }
-  return clusterList;
-}
+//       clusterList.push_back(barCodeCluster);       
+//     }
+//  return clusterList;
+//}
 
 
 void coverage(clusterList_t  &clusterList) {                                                                                                                                                 
@@ -255,42 +255,42 @@ double simpleMatch(string barcode1, string barcode2) {
 }
 
 
-hashmap_t filterBarcodes(hashmap_t &hashmap) {
-  hashmap_t::iterator hashIt;
-  hashmap_t filteredHashmap;
-   for(hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
-     if (hashIt->second.first == 1) {
+//hashmap_t filterBarcodes(hashmap_t &hashmap) {
+//  hashmap_t::iterator hashIt;
+//  hashmap_t filteredHashmap;
+//   for(hashIt = hashmap.begin(); hashIt != hashmap.end(); hashIt++) {
+//     if (hashIt->second.first == 1) {
        //cout << "found it!! \n";
-      filteredHashmap[hashIt->first] = hashIt->second;
-            }
-     }
-   return filteredHashmap;
-}
+//      filteredHashmap[hashIt->first] = hashIt->second;
+//            }
+//     }
+//   return filteredHashmap;
+//}
 
-void barCodeReAllign(hashmap_t &hashmap, hashmap_t &filteredHashmap) {
-  hashmap_t::iterator hashIt1;
-  hashmap_t::iterator hashIt2;
+//void barCodeReAllign(hashmap_t &hashmap, hashmap_t &filteredHashmap) {
+//  hashmap_t::iterator hashIt1;
+//  hashmap_t::iterator hashIt2;
 
-  for (hashIt2 = filteredHashmap.begin(); hashIt2 != filteredHashmap.end(); hashIt2++) {
+//  for (hashIt2 = filteredHashmap.begin(); hashIt2 != filteredHashmap.end(); hashIt2++) {
     //cout << hashIt2->second.second[0].first << endl;
     //cout << hashIt2->first << endl;
     //   cout << "found the rema"
 
 
-    for (hashIt1 = hashmap.begin(); hashIt1 != hashmap.end(); hashIt1++) {
+//    for (hashIt1 = hashmap.begin(); hashIt1 != hashmap.end(); hashIt1++) {
       // cout << hashIt1->first << ", " << hashIt2->first << endl;
-      double smc = simpleMatch(hashIt2->first, hashIt1->first);
+//      double smc = simpleMatch(hashIt2->first, hashIt1->first);
       //cout << smc << endl;
 
-      if ((smc >= 0.92) && (smc != 1)) {
-	cout << "smc: " << smc << endl;
-	  cout << "found the remap!: " << hashIt1->first << ", " << hashIt2->first << endl;
-	  cout << hashIt2->second.second[0].first << ", " << hashIt1->second.second[0].first << endl;
-	  break;
-      }	
-   }
-  }
-}
+//      if ((smc >= 0.92) && (smc != 1)) {
+//	cout << "smc: " << smc << endl;
+//	  cout << "found the remap!: " << hashIt1->first << ", " << hashIt2->first << endl;
+//	  cout << hashIt2->second.second[0].first << ", " << hashIt1->second.second[0].first << endl;
+//	  break;
+//      }	
+//   }
+//  }
+//}
 
 
 
@@ -558,6 +558,11 @@ vector<tuple<int, char, char> >  variantDetector(vector<pair<char, string> > &to
   return variants;
 }
 
+bool sortReads(pair<BamAlignment, tuple<int, char, char> > &read1, pair<BamAlignment, tuple<int, char, char> > &read2) {
+  return read1.first.Position < read2.first.Position;
+}
+
+
 
 
 //main function where we loop through all allignments, and stores data of interest to a hashmap
@@ -568,7 +573,7 @@ int main() {
   string fasta1 = " /uufs/chpc.utah.edu/common/home/marth-d1/data/software/chpc/kingspeak.peaks/gkno_launcher/tools/vcflib/fastahack/fastahack -r chr1:";
   string fasta2 = " /uufs/chpc.utah.edu/common/home/marth-d1/data/software/chpc/kingspeak.peaks/gkno_launcher/resources/homo_sapiens_grch38/current/GRCh38_full_analysis_set_plus_decoy_hla.fa";
   string outputFilename;
-    
+  
   BamTools::BamReader reader;
   reader.Open(filename);
   cout << filename << "\n";
@@ -611,26 +616,44 @@ int main() {
       //cout << execute;
       //cout << al.AlignedBases << endl;
       //cout << al.QueryBases << endl << endl;  
-      variantDetector(tokenizedCig, execute, al.QueryBases, al.Position); 
+      // variantDetector(tokenizedCig, execute, al.QueryBases, al.Position); 
       if (al.GetTag("BX", bx)) {
 	//if key already exists, add to freq count and position list
-	
+	variants_t variants = variantDetector(tokenizedCig, execute, al.QueryBases, al.Position);
        	if (hashMap.count(bx) == 1) {
-	  hashMap.find(bx)->second.second.push_back(make_pair(al.Position, al.GetEndPosition()));
-	  hashMap.find(bx)->second.first++;
-	}
+	  vector<molecule_t>::iterator molIt;
+	  // molecules = hashMap.find(bx);
+	  int check = 0;
+       	  for (molIt = hashMap.find(bx)->second.begin(); molIt != hashMap.find(bx)->second.end(); molIt++) {
+	    if (al.Position < (*molIt).back().first.Position + 175000 && al.Position > molIt->back().first.Position - 175000) {
+	      (*molIt).push_back(make_pair(al, variants));
+	      check = 1;
+	    }
+	  }
+	  //sort(molIt->begin(), molIt->end(), sortReads);
+	  if (!check) { 
+	    molecule_t newMolecule;
+	    newMolecule.push_back(make_pair(al, variants));
+	    hashMap.find(bx)->second.push_back(newMolecule);
+  }
+}
 	//if new key, create new pair of frequency count and position list
 	else {
-	  std::vector<pair<int32_t,int32_t> > positionList;
-	  positionList.push_back(make_pair(al.Position, al.GetEndPosition()));
-	  hashMap[bx] = make_pair(1, positionList);
+	  // std::vector<pair<int32_t,int32_t> > positionList;
+	  // positionList.push_back(make_pair(al.Position, al.GetEndPosition()));
+	  vector<molecule_t> molecules;
+	  //pair<int, int> posPair = make_pair(al.Position, al.GetEndPosition());
+	  molecule_t molecule;
+	  molecule.push_back(make_pair(al, variants));
+	  molecules.push_back(molecule);		      
+	  hashMap[bx] = molecules;
 	}
       }
       i++;
   }
  }
  
-  distance(hashMap);
+  //  distance(hashMap);
  // barCodeStats(hashMap);
   //  clusterList_t clustList =  clusters(hashMap);
   //  coverage(clustList);
